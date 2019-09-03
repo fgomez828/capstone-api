@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
-const connectionString = 'mongodb://localhost/3000';
+const connectionString = 'mongodb://localhost/capstone';
 
-mongoose.connect(connectionString,
-  { useNewUrlParser: true,
-    useCreateIndex: true
+mongoose.connect(connectionString, { 
+	useNewUrlParser: true,
+	useCreateIndex: true
   });
 
 mongoose.connection.on('connected', () => {
@@ -15,5 +15,5 @@ mongoose.connection.on('disconnected', () => {
 })
 
 mongoose.connection.on('error', (err) => {
-  console.log(`mongoose error: ${err}`)
+  console.log(`mongoose error: ${connectionString}`)
 })

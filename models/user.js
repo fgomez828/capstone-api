@@ -13,8 +13,14 @@ const User = new mongoose.model('User', mongoose.Schema({
 		type: Number,
 		required: true
 	},
+	phone: {
+		type: String,
+		required: true
+	},
 	reviews: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Review"
 	}]
 }))
+
+module.exports = User
