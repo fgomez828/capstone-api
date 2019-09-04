@@ -9,6 +9,10 @@ const Place = new mongoose.model('Place', mongoose.Schema({
 		type: String,
 		required: true
 	},
+	googleId: {
+		type: Number,
+		required: true
+	},
 	reviews: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Review"

@@ -19,11 +19,25 @@ router.get('/', async (req, res, next) => {
 
 		const data = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=1500&type=local_government_office&key=${process.env.API_KEY}`)
 
-		res.status(200).send(data)
+		const parsedData = JSON.parse(data)
+		const condensedResults = parsedData.results.map(result => {
+			const condensedResult = {}
+			condensedResult.id = result.id
+			condensedResult.name = result.name
+			condensedResult.vicinity = result.vicinity
+			return condensedResult
+		})
+		console.log(condensedResults);
+
+		res.status(200).send(condensedResults)
 		
 	} catch(err) {
 		next(err)
 	}
 })
+
+// get info for one place that is clicked on
+router.get('/:id')
+// get info for a search query
 
 module.exports = router
