@@ -34,9 +34,28 @@ router.post('/register', async (req, res, next) => {
 })
 
 // login
-// router.post('/', (req, res, next) => {
-	
-// })
+router.post('/login', async (req, res, next) => {
+	try {
+		// check for duplicate user
+		const existingUser = await User.findOne({phone: req.body.phone})		
+		// if hashed passwords match, set session
+		if(bcrypt.compareSync(req.body.password, existingUser.password)) {			
+			// set session
+			req.session.user = existingUser
+			req.session.userId = existingUser._id
+			req.session.username = existingUser.username
+			req.session.loggedIn = true
+
+			res.status(201).json(existingUser)
+		} else {
+			// send message that phone number or password was incorrect
+			res.sendStatus(401).json({data: {}, message: "Phone number or password was incorrect"})
+		}
+
+	} catch(err) {
+		next(err)
+	}
+})
 
 // logout
 
