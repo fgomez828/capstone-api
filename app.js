@@ -32,6 +32,9 @@ app.use(session({
 const usersController = require('./controllers/UsersController')
 app.use('/users', usersController)
 
+const placesController = require('./controllers/PlacesController')
+app.use('/places', placesController)
+
 app.get('/', (req, res, next) => {
 	res.send("woot connected to app.js");
 })
