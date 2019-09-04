@@ -8,18 +8,10 @@ const router = express.Router()
 // get info for places near zip code from google api
 router.get('/', async (req, res, next) => {
 	try {
-		// first, geocode zip code
-		const zipcode = req.session.user.zipcode
-		const coordInfo = await request(`https://maps.googleapis.com/maps/api/geocode/json?address=${zipcode}&key=${process.env.API_KEY}`)
-		const parsedCoordInfo = JSON.parse(coordInfo)
-		const lat = parsedCoordInfo.results[0].geometry.location.lat
-		const long = parsedCoordInfo.results[0].geometry.location.lng
+		const lat = req.session.user.lat
+		const long = req.session.user.long
 
-		await newUser.save()
-
-		console.log(newUser, "new user with lat and long info");
-
-		// next, query for nearby gov't offices
+		// query for nearby gov't offices
 		const data = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=1500&type=bus_station,cemetery,city_hall,courthouse,embassy,fire_station,hospital,library,local_government_office,museum,park,parking,police,post_office,school,train_station,transit_station&key=${process.env.API_KEY}`)
 
 		const parsedData = JSON.parse(data)
@@ -63,14 +55,10 @@ router.get('/:id', async (req, res, next) => {
 
 // get info for a search query
 router.post('/', async (req, res, next) => {
-	// geocode zip code again
-	const zipcode = req.session.user.zipcode
-	const coordInfo = await request(`https://maps.googleapis.com/maps/api/geocode/json?address=${zipcode}&key=${process.env.API_KEY}`)
-	const parsedCoordInfo = JSON.parse(coordInfo)
-	const lat = parsedCoordInfo.results[0].geometry.location.lat
-	const long = parsedCoordInfo.results[0].geometry.location.lng
+	const lat = req.session.user.lat
+	const long = req.session.user.long
 
-	// now do a nearby search for places that match query
+	// do a nearby search for places that match query
 	const query = req.body.query
 	const searchResults = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=5000&type=bus_station,cemetery,city_hall,courthouse,embassy,fire_station,hospital,library,local_government_office,museum,park,parking,police,post_office,school,train_station,transit_station&keyword=${query}&key=${process.env.API_KEY}`)
 
