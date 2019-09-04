@@ -16,18 +16,18 @@ router.get('/', async (req, res, next) => {
 		const long = parsedCoordInfo.results[0].geometry.location.lng
 
 		// next, query for nearby gov't offices
-
 		const data = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=1500&type=local_government_office&key=${process.env.API_KEY}`)
 
 		const parsedData = JSON.parse(data)
+
 		const condensedResults = parsedData.results.map(result => {
 			const condensedResult = {}
-			condensedResult.id = result.id
+			condensedResult.id = result.place_id
 			condensedResult.name = result.name
-			condensedResult.vicinity = result.vicinity
+			condensedResult.address = result.vicinity
+			condensedResult.rating = result.rating
 			return condensedResult
 		})
-		console.log(condensedResults);
 
 		res.status(200).send(condensedResults)
 		
@@ -37,7 +37,29 @@ router.get('/', async (req, res, next) => {
 })
 
 // get info for one place that is clicked on
-router.get('/:id')
+router.get('/:id', async (req, res, next) => {
+	try {
+		// const id = "ChIJR3p8jfEZBYgRozK3wGYpbQM"
+		// first check if it's in database
+		const foundPlace = await Place.findOne({googleId: req.params.id})
+		if(foundPlace) {
+			foundPlace.populate('reviews').exec((err, place, next) => {
+				if(err) next(err);
+				res.status(200).json(place)
+			})
+		} else {
+			// if not, do google api call
+			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${req.params.id}&fields=name,formatted_address,place_id,rating,vicinity&key=${process.env.API_KEY}`)
+			res.status(200).send(placeInfo)
+		}
+	} catch(err) {
+		next(err)
+	}
+})
+
 // get info for a search query
 
 module.exports = router
+
+
+

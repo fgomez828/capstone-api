@@ -10,7 +10,7 @@ const Place = new mongoose.model('Place', mongoose.Schema({
 		required: true
 	},
 	googleId: {
-		type: Number,
+		type: String,
 		required: true
 	},
 	reviews: [{
