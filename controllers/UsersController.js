@@ -74,14 +74,9 @@ router.put('/:id', async (req, res, next) => {
 })
 
 // delete account
+router.delete('/:id', async (req, res, next) => {
+	const deletedUser = await User.findByIdAndDelete(req.session.userId)
+	res.status(200).json({data: {}, message: "User account deleted"})
+})
 
 module.exports = router
-
-
-
-
-
-
-
-
-
