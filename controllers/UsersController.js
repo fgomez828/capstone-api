@@ -66,7 +66,22 @@ router.get('/logout', (req, res, next) => {
 })
 
 // update account
+router.put('/:id', async (req, res, next) => {
+	// get new user object; find matching user by id and update
+	const updatedUser = await User.findByIdAndUpdate(req.body.id, req.body)
+	// return updated user object
+	res.status(200).json(updatedUser)
+})
 
 // delete account
 
 module.exports = router
+
+
+
+
+
+
+
+
+
