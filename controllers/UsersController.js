@@ -49,7 +49,7 @@ router.post('/login', async (req, res, next) => {
 			res.status(201).json(existingUser)
 		} else {
 			// send message that phone number or password was incorrect
-			res.sendStatus(401).json({data: {}, message: "Phone number or password was incorrect"})
+			res.status(401).json({data: {}, message: "Phone number or password was incorrect"})
 		}
 
 	} catch(err) {
@@ -58,6 +58,12 @@ router.post('/login', async (req, res, next) => {
 })
 
 // logout
+router.get('/logout', (req, res, next) => {
+	req.session.destroy((err) => {
+		if(err) next(err)
+		else res.status(200).json({data: {}, message: "Log out successful"})
+	})
+})
 
 // update account
 
