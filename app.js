@@ -35,6 +35,9 @@ app.use('/users', usersController)
 const placesController = require('./controllers/PlacesController')
 app.use('/places', placesController)
 
+const reviewsController = require('./controllers/ReviewsController')
+app.use('/reviews', reviewsController)
+
 app.get('/', (req, res, next) => {
 	res.send("woot connected to app.js");
 })
