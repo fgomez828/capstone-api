@@ -1,5 +1,7 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
+const request = require('request-promise-native')
+
 const User = require('../models/user')
 
 const router = express.Router()
@@ -13,10 +15,18 @@ router.post('/register', async (req, res, next) => {
 			// take req.body and hash password
 			const hashedPassword = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10))
 			req.body.password = hashedPassword
-			// res.status(200).json(req.body)
 
 			// create user
 			const newUser = await User.create(req.body)
+
+			// add latitude and longitude info to user using google api
+			const zipcode = newUser.zipcode
+			const coordInfo = await request(`https://maps.googleapis.com/maps/api/geocode/json?address=${zipcode}&key=${process.env.API_KEY}`)
+			const parsedCoordInfo = JSON.parse(coordInfo)
+			newUser.lat = parsedCoordInfo.results[0].geometry.location.lat
+			newUser.long = parsedCoordInfo.results[0].geometry.location.lng
+
+			await newUser.save()
 			// set session
 			req.session.user = newUser
 			req.session.userId = newUser._id

@@ -13,6 +13,8 @@ const User = new mongoose.model('User', mongoose.Schema({
 		type: Number,
 		required: true
 	},
+	lat: String,
+	long: String,
 	phone: {
 		type: String,
 		required: true
