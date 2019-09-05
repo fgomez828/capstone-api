@@ -20,8 +20,17 @@ router.post('/new', async (req, res, next) => {
 	res.status(201).json(newReview)
 })
 // get all reviews by place
+router.get('/:placeId', async (req, res, next) => {
+    // find by placeId, not by googleId, because it will alrady be in db if it has reviews
+    const placeReviews = await Review.findMany({place: req.params.placeId})
+    res.status(200).json(placeReviews)
+})
 
 // get all reviews by user
+router.get('/:userId', async (req, res, next) => {
+	const userReviews = await Review.findMany({user: req.params:userId})
+	res.status(200).json(userReviews)
+})
 
 // edit review
 
