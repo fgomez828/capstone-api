@@ -57,6 +57,7 @@ router.post('/login', async (req, res, next) => {
 			req.session.loggedIn = true
 
 			res.status(201).json(existingUser)
+			console.log("logged in successfully");
 		} else {
 			// send message that phone number or password was incorrect
 			res.status(401).json({data: {}, message: "Phone number or password was incorrect"})

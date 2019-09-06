@@ -1,5 +1,6 @@
 const express = require('express')
 const Review = require('../models/review')
+const request = require('request-promise-native')
 
 const router = express.Router()
 
@@ -12,7 +13,7 @@ router.post('/new', async (req, res, next) => {
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${req.params.place}&fields=name,formatted_address,place_id,rating,vicinity&key=${process.env.API_KEY}`)
 
 			console.log(placeInfo, "<--- place info if not found in db");
-			// if it shows up the way I need, save it to send as json to front end
+			// if it shows up the way I need, save it to db
 		}
 		// create review
 		const newReview = await Review.create(req.body)
@@ -37,7 +38,7 @@ router.get('/:placeId', async (req, res, next) => {
 // get all reviews by user
 router.get('/:userId', async (req, res, next) => {
 	try {
-		const userReviews = await Review.findMany({user: req.params:userId})
+		const userReviews = await Review.findMany({user: req.params.userId})
 		res.status(200).json(userReviews)
 	} catch(err) {
 		next(err)
