@@ -63,10 +63,9 @@ router.get('/:id', async (req, res, next) => {
 		// first check if it's in database
 		const foundPlace = await Place.findOne({googleId: req.params.id})
 		if(foundPlace) {
-			foundPlace.populate('reviews').exec((err, place, next) => {
-				if(err) next(err);
-				res.status(200).json(place)
-			})
+			const placeWithReviews = await foundPlace.populate('reviews')
+			console.log(placeWithReviews, "place with Reviews in places controller");
+			res.status(200).send(placeWithReviews)
 		} else {
 			// if not, do google api call
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${req.params.id}&fields=name,formatted_address,place_id,rating,vicinity&key=${process.env.API_KEY}`)
