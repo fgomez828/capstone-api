@@ -15,13 +15,14 @@ router.get('/', async (req, res, next) => {
 		const data = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=1500&type=bus_station,cemetery,city_hall,courthouse,embassy,fire_station,hospital,library,local_government_office,museum,park,parking,police,post_office,school,train_station,transit_station&key=${process.env.API_KEY}`)
 
 		const parsedData = JSON.parse(data)
-
 		const condensedResults = parsedData.results.map(result => {
 			const condensedResult = {}
 			condensedResult.id = result.place_id
 			condensedResult.name = result.name
 			condensedResult.address = result.vicinity
 			condensedResult.rating = result.rating
+			condensedResult.lat = result.geometry.location.lat.toString()
+			condensedResult.long = result.geometry.location.lng.toString()
 			return condensedResult
 		})
 
