@@ -13,12 +13,15 @@ router.post('/new', async (req, res, next) => {
 		console.log(req.body, "request body");
 		let existingPlace
 		existingPlace = await Place.findOne({googleId: req.body.place.id})
+		console.log("existingPlace after trying to find in DB based on req.body");
 		if(!existingPlace) {
+			console.log("it wasn't there");
 			// google query
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${req.body.place.address}&inputtype=textquery&fields=name,place_id,rating&key=${process.env.API_KEY}`)
 
 			const possiblePlaces = JSON.parse(placeInfo)
-			const thePlace = possiblePlaces.candidates[0]
+			// assume it's the first one "I'm feeling lucky ;)"
+			const thePlace = possiblePlaces.candidates[0] 
 
 			// save to db using google info and info from front-end
 			const placeObjToSave = {}
@@ -27,9 +30,11 @@ router.post('/new', async (req, res, next) => {
 			placeObjToSave.googleId = req.body.place.id
 
 			const savedPlace = await Place.create(placeObjToSave)
+			console.log("here's the place we just created since it doesn't exist");
+			console.log(savedPlace);
 			existingPlace = savedPlace
-		} else {
-			res.status(201).json(existingPlace)
+			console.log("stored it in existingPlace, here's existingPlace");
+			console.log(existingPlace);
 		}
 
 		// now that place is in db, create review
@@ -40,8 +45,23 @@ router.post('/new', async (req, res, next) => {
 		reviewObjToSave.program = req.body.program
 
 		const newReview = await Review.create(reviewObjToSave)
+		console.log("review we just created");
+		console.log(newReview);
+		console.log("existingPlace before we add review to it");
+		console.log(existingPlace);
+		existingPlace.reviews.push(newReview)
+		console.log("existingPlaceafter push")
+		console.log(existingPlace);
+		await existingPlace.save()
+		console.log("after save");
+		console.log(existingPlace);
 		// make sure to add this review's id to the place and the user && the place id to the review && and the user id to the review
 		res.status(201).json(newReview)
+		// res.status(201).json({
+		// 	review: newReview,
+		// 	place: existingPlace
+		// })
+
 	} catch(err) {
 		next(err)
 	}
@@ -52,6 +72,7 @@ router.get('/:googleId', async (req, res, next) => {
 	    // find by googleId
 	    console.log(req.params);
 	    const placeReviews = await Review.find({googleId: req.params.googleId})
+	    console.log(placeReviews, "reviews to be sent to react app");
 	    res.status(200).json(placeReviews)
 	} catch(err) {
 		next(err)
