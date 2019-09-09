@@ -24,6 +24,7 @@ router.post('/new', async (req, res, next) => {
 			const thePlace = possiblePlaces.candidates[0] 
 
 			// save to db using google info and info from front-end
+			console.log(req.body.place, "req.body.place to see if it has name, id, and address")
 			const placeObjToSave = {}
 			placeObjToSave.name = req.body.place.name
 			placeObjToSave.address = thePlace.name
@@ -45,22 +46,10 @@ router.post('/new', async (req, res, next) => {
 		reviewObjToSave.program = req.body.program
 
 		const newReview = await Review.create(reviewObjToSave)
-		console.log("review we just created");
-		console.log(newReview);
-		console.log("existingPlace before we add review to it");
-		console.log(existingPlace);
 		existingPlace.reviews.push(newReview)
-		console.log("existingPlaceafter push")
-		console.log(existingPlace);
 		await existingPlace.save()
-		console.log("after save");
-		console.log(existingPlace);
 		// make sure to add this review's id to the place and the user && the place id to the review && and the user id to the review
 		res.status(201).json(newReview)
-		// res.status(201).json({
-		// 	review: newReview,
-		// 	place: existingPlace
-		// })
 
 	} catch(err) {
 		next(err)
@@ -70,11 +59,15 @@ router.post('/new', async (req, res, next) => {
 router.get('/:googleId', async (req, res, next) => {
 	try {
 	    // find by googleId
-	    console.log(req.params);
-	    const placeReviews = await Review.find({googleId: req.params.googleId})
+	    console.log(req.params, "req.params when getting reviews by place");
+	    const place = await Place.findOne({googleId: req.params.googleId})
+	    console.log(place, " the place we want reviews for");
+	    const placeReviews = await Review.find({place: place._id})
 	    console.log(placeReviews, "reviews to be sent to react app");
 	    res.status(200).json(placeReviews)
 	} catch(err) {
+		console.log("this is an error when getting reviews by place");
+		console.log(err);
 		next(err)
 	}
 })
@@ -82,7 +75,7 @@ router.get('/:googleId', async (req, res, next) => {
 // get all reviews by user
 router.get('/:userId', async (req, res, next) => {
 	try {
-		const userReviews = await Review.findMany({user: req.params.userId})
+		const userReviews = await Review.find({user: req.params.userId})
 		res.status(200).json(userReviews)
 	} catch(err) {
 		next(err)

@@ -60,36 +60,22 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
 	try {
 		// first check if it's in database
+		console.log(req.params, "req.params when getting one place");
 		const foundPlace = await Place.findOne({googleId: req.params.id})
-		console.log(foundPlace, "found place in db, ready to populate");
 		if(foundPlace) {
 			// if it is, populate reviews
-
-			// const placeWithReviews = await foundPlace.populate('reviews').exec((err, place) => {
-			// 	if(err) return handleError(err);
-			// 	return place
-			// })
-
 			const placeWithReviews = await Place.findOne({googleId: req.params.id})
 				.populate('reviews')
 				.exec()
 
-			// (err, place) => {
-					// if(err) return handleError(err);
-					// console.log(place, "place inside db query");
-					// return place
-				console.log(placeWithReviews, " <--- place with reviews in db");
-				res.status(200).json(placeWithReviews)
-				// }
+			console.log(placeWithReviews, " <--- place with reviews in db");
+			res.status(200).json(placeWithReviews)
 		} else {
 			// if not, do google api call
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${req.params.id}&fields=name,formatted_address,place_id,rating,vicinity&key=${process.env.API_KEY}`)
-			console.log(placeInfo, " <--- place from google api call");
 			res.status(200).send(placeInfo)
 		}
 	} catch(err) {
-		console.log("there was an error");
-		console.log(err);
 		next(err)
 	}
 })
