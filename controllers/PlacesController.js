@@ -40,7 +40,6 @@ router.post('/', async (req, res, next) => {
 
 	// do a nearby search for places that match query
 	const query = req.body.query
-	console.log(query, "<-- req.body.query");
 	const searchResults = await request(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${long}&radius=5000&type=bus_station,cemetery,city_hall,courthouse,embassy,fire_station,hospital,library,local_government_office,museum,park,parking,police,post_office,school,train_station,transit_station&keyword=${query}&key=${process.env.API_KEY}`)
 
 	const parsedSearchResults = JSON.parse(searchResults)
@@ -64,11 +63,13 @@ router.get('/:id', async (req, res, next) => {
 		const foundPlace = await Place.findOne({googleId: req.params.id})
 		if(foundPlace) {
 			const placeWithReviews = await foundPlace.populate('reviews')
-			console.log(placeWithReviews, "place with Reviews in places controller");
+			console.log(placeWithReviews, "place with Reviews in places controller")
+			console.log(placeWithReviews, " <--- place with reviews in db");
 			res.status(200).send(placeWithReviews)
 		} else {
 			// if not, do google api call
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${req.params.id}&fields=name,formatted_address,place_id,rating,vicinity&key=${process.env.API_KEY}`)
+			console.log(placeInfo, " <--- place from google api call");
 			res.status(200).send(placeInfo)
 		}
 	} catch(err) {
