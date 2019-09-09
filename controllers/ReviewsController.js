@@ -11,10 +11,12 @@ const router = express.Router()
 router.post('/new', async (req, res, next) => {
 	// query database for place matching
 	try {
-		console.log(req.body, "request body");
+		console.log("request body in review create");
+		console.log(req.body);
 		let existingPlace
-		existingPlace = await Place.findOne({googleId: req.body.place.id})
-		console.log(existingPlace, "existingPlace after trying to find in DB based on req.body");
+		existingPlace = await Place.findOne({googleId: req.body.place.googleId})
+		console.log( "existingPlace after trying to find in DB based on req.body:");
+		console.log(existingPlace);
 		if(!existingPlace) {
 			// google query
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${req.body.place.address}&inputtype=textquery&fields=name,place_id,rating&key=${process.env.API_KEY}`)
@@ -35,12 +37,12 @@ router.post('/new', async (req, res, next) => {
 			existingPlace = savedPlace
 		}
 
-		const u = await User.findById(req.session.userId)
+		const user = await User.findById(req.session.userId)
 
 		// now that place is in db, create review
 		const reviewObjToSave = {}
 		reviewObjToSave.place = existingPlace._id
-		reviewObjToSave.user = u
+		reviewObjToSave.user = user
 		reviewObjToSave.description = req.body.description
 		reviewObjToSave.program = req.body.program
 
@@ -50,11 +52,10 @@ router.post('/new', async (req, res, next) => {
 		await existingPlace.save()
 
 		// and to the user who wrote it
-		const user = await User.findById(newReview.user)
+		const reviewUser = await User.findById(newReview.user)
 		user.reviews.push(newReview)
-		await user.save()
+		await reviewUser.save()
 
-		console.log(user, "the user whose review this is");
 		res.status(201).json(newReview)
 
 	} catch(err) {
