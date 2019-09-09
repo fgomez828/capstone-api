@@ -37,12 +37,12 @@ router.post('/new', async (req, res, next) => {
 			existingPlace = savedPlace
 		}
 
-		const user = await User.findById(req.session.userId)
+		const reviewingUser = await User.findById(req.session.userId)
 
 		// now that place is in db, create review
 		const reviewObjToSave = {}
 		reviewObjToSave.place = existingPlace._id
-		reviewObjToSave.user = user
+		reviewObjToSave.user = reviewingUser
 		reviewObjToSave.description = req.body.description
 		reviewObjToSave.program = req.body.program
 
@@ -66,9 +66,7 @@ router.post('/new', async (req, res, next) => {
 router.get('/:googleId', async (req, res, next) => {
 	try {
 	    // find by googleId
-	    console.log(req.params, "req.params when getting reviews by place in reviews controller");
 	    const place = await Place.findOne({googleId: req.params.googleId})
-	    console.log(place, " the place we want reviews for");
 	    if(place) {
 		    const placeReviews = await Review.find({place: place._id})
 		    console.log(placeReviews, "reviews to be sent to react app");
@@ -77,14 +75,12 @@ router.get('/:googleId', async (req, res, next) => {
 	    	res.status(200).json("No place found in database")
 	    }
 	} catch(err) {
-		console.log("this is an error when getting reviews by place");
-		console.log(err);
 		next(err)
 	}
 })
 
 // get all reviews by user
-router.get('/:userId', async (req, res, next) => {
+router.get('/user/:userId', async (req, res, next) => {
 	try {
 		const userReviews = await Review.find({user: req.params.userId})
 		res.status(200).json(userReviews)
@@ -96,6 +92,8 @@ router.get('/:userId', async (req, res, next) => {
 // edit review
 router.put('/:id', async (req, res, next) => {
 	try {
+		console.log("below is req.body for updating a review");
+		console.log(req.body)
 		const foundReview = await Review.findByIdAndUpdate(req.params.id, req.body)
 		res.status(201).json(foundReview)
 	} catch(err) {
