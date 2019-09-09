@@ -60,7 +60,7 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
 	try {
 		// first check if it's in database
-		console.log(req.params, "req.params when getting one place");
+		console.log(req.params, "req.params when getting one place in place Show route using my db id");
 		const foundPlace = await Place.findOne({googleId: req.params.id})
 		if(foundPlace) {
 			// if it is, populate reviews

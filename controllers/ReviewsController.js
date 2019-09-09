@@ -3,6 +3,7 @@ const request = require('request-promise-native')
 
 const Place = require('../models/place')
 const Review = require('../models/review')
+const User = require('../models/user')
 
 const router = express.Router()
 
@@ -13,9 +14,8 @@ router.post('/new', async (req, res, next) => {
 		console.log(req.body, "request body");
 		let existingPlace
 		existingPlace = await Place.findOne({googleId: req.body.place.id})
-		console.log("existingPlace after trying to find in DB based on req.body");
+		console.log(existingPlace, "existingPlace after trying to find in DB based on req.body");
 		if(!existingPlace) {
-			console.log("it wasn't there");
 			// google query
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${req.body.place.address}&inputtype=textquery&fields=name,place_id,rating&key=${process.env.API_KEY}`)
 
@@ -24,31 +24,37 @@ router.post('/new', async (req, res, next) => {
 			const thePlace = possiblePlaces.candidates[0] 
 
 			// save to db using google info and info from front-end
-			console.log(req.body.place, "req.body.place to see if it has name, id, and address")
 			const placeObjToSave = {}
 			placeObjToSave.name = req.body.place.name
 			placeObjToSave.address = thePlace.name
-			placeObjToSave.googleId = req.body.place.id
+			placeObjToSave.googleId = req.body.place.googleId
 
+			// we must create it if it wasn't already there
 			const savedPlace = await Place.create(placeObjToSave)
-			console.log("here's the place we just created since it doesn't exist");
-			console.log(savedPlace);
+
 			existingPlace = savedPlace
-			console.log("stored it in existingPlace, here's existingPlace");
-			console.log(existingPlace);
 		}
+
+		const u = await User.findById(req.session.userId)
 
 		// now that place is in db, create review
 		const reviewObjToSave = {}
 		reviewObjToSave.place = existingPlace._id
-		reviewObjToSave.user = req.session.userId
+		reviewObjToSave.user = u
 		reviewObjToSave.description = req.body.description
 		reviewObjToSave.program = req.body.program
 
+		// make sure to add this review's id to the place
 		const newReview = await Review.create(reviewObjToSave)
 		existingPlace.reviews.push(newReview)
 		await existingPlace.save()
-		// make sure to add this review's id to the place and the user && the place id to the review && and the user id to the review
+
+		// and to the user who wrote it
+		const user = await User.findById(newReview.user)
+		user.reviews.push(newReview)
+		await user.save()
+
+		console.log(user, "the user whose review this is");
 		res.status(201).json(newReview)
 
 	} catch(err) {
@@ -59,12 +65,16 @@ router.post('/new', async (req, res, next) => {
 router.get('/:googleId', async (req, res, next) => {
 	try {
 	    // find by googleId
-	    console.log(req.params, "req.params when getting reviews by place");
+	    console.log(req.params, "req.params when getting reviews by place in reviews controller");
 	    const place = await Place.findOne({googleId: req.params.googleId})
 	    console.log(place, " the place we want reviews for");
-	    const placeReviews = await Review.find({place: place._id})
-	    console.log(placeReviews, "reviews to be sent to react app");
-	    res.status(200).json(placeReviews)
+	    if(place) {
+		    const placeReviews = await Review.find({place: place._id})
+		    console.log(placeReviews, "reviews to be sent to react app");
+		    res.status(200).json(placeReviews)
+	    } else {
+	    	res.status(200).json("No place found in database")
+	    }
 	} catch(err) {
 		console.log("this is an error when getting reviews by place");
 		console.log(err);
