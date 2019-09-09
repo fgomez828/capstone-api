@@ -10,11 +10,11 @@ const router = express.Router()
 router.post('/new', async (req, res, next) => {
 	// query database for place matching
 	try {
+		console.log(req.body, "request body");
 		let existingPlace
 		existingPlace = await Place.findOne({googleId: req.body.place.id})
 		if(!existingPlace) {
-			// google 
-			console.log("place not found, making new place");
+			// google query
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${req.body.place.address}&inputtype=textquery&fields=name,place_id,rating&key=${process.env.API_KEY}`)
 
 			const possiblePlaces = JSON.parse(placeInfo)
@@ -47,10 +47,11 @@ router.post('/new', async (req, res, next) => {
 	}
 })
 // get all reviews by place
-router.get('/:placeId', async (req, res, next) => {
+router.get('/:googleId', async (req, res, next) => {
 	try {
-	    // find by placeId, not by googleId, because it will alrady be in db if it has reviews
-	    const placeReviews = await Review.find({place: req.params.placeId})
+	    // find by googleId
+	    console.log(req.params);
+	    const placeReviews = await Review.find({googleId: req.params.googleId})
 	    res.status(200).json(placeReviews)
 	} catch(err) {
 		next(err)

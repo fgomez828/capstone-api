@@ -19,7 +19,10 @@ const Review = new mongoose.model('Review', mongoose.Schema({
 		type: String,
 		required: true
 	},
-	program: []
+	program: {
+		type: String,
+		required: true
+	}
 }))
 
 module.exports = Review
