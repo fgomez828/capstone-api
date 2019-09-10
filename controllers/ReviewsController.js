@@ -48,17 +48,46 @@ router.post('/new', async (req, res, next) => {
 
 		// make sure to add this review's id to the place
 		const newReview = await Review.create(reviewObjToSave)
+
 		existingPlace.reviews.push(newReview)
 		await existingPlace.save()
 
 		// and to the user who wrote it
 		const reviewUser = await User.findById(newReview.user)
-		user.reviews.push(newReview)
+		reviewingUser.reviews.push(newReview)
+
 		await reviewUser.save()
 
-		res.status(201).json(newReview)
+
+		res.status(201).json({
+			message: 'successfully added review'
+		})
+
+		// console.log("here is newReview");
+		// console.log(newReview);
+		// console.log("here is typeof newReview");
+		// console.log(typeof newReview);
+		// console.log("prototype newReview");
+		// console.dir(Object.getPrototypeOf(newReview))
+
+		// console.log("this line causes an error");
+		// const jaysahn = JSON.stringify(newReview)
+		// console.log("can you see this");
+		// console.log(jaysahn);
+
+		// res.send({'hi': 'there'})
+		
+
+		// res.status(201).send(newReview)
+
+		// res.json({
+		// 	status: 'ok',
+		// 	asdf:'asdf'
+		// })
 
 	} catch(err) {
+		console.log("this is an error for creating a review:");
+		console.log(err);
 		next(err)
 	}
 })
