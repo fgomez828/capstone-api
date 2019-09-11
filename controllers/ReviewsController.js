@@ -28,7 +28,7 @@ router.post('/new', async (req, res, next) => {
 			// save to db using google info and info from front-end
 			const placeObjToSave = {}
 			placeObjToSave.name = req.body.place.name
-			placeObjToSave.address = thePlace.name
+			placeObjToSave.address = req.body.place.address
 			placeObjToSave.googleId = req.body.place.googleId
 
 			// we must create it if it wasn't already there
