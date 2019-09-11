@@ -18,11 +18,11 @@ router.post('/new', async (req, res, next) => {
 		console.log( "existingPlace after trying to find in DB based on req.body:");
 		console.log(existingPlace);
 		if(!existingPlace) {
-			// google query
+			// google query if place does not exist
 			const placeInfo = await request(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${req.body.place.address}&inputtype=textquery&fields=name,place_id,rating&key=${process.env.API_KEY}`)
-
 			const possiblePlaces = JSON.parse(placeInfo)
-			// assume it's the first one "I'm feeling lucky ;)"
+
+			// assume it's the first one
 			const thePlace = possiblePlaces.candidates[0] 
 
 			// save to db using google info and info from front-end
@@ -36,7 +36,7 @@ router.post('/new', async (req, res, next) => {
 
 			existingPlace = savedPlace
 		}
-
+		// find the user whose review this is
 		const reviewingUser = await User.findById(req.session.userId)
 
 		// now that place is in db, create review
@@ -48,46 +48,20 @@ router.post('/new', async (req, res, next) => {
 
 		// make sure to add this review's id to the place
 		const newReview = await Review.create(reviewObjToSave)
-
 		existingPlace.reviews.push(newReview)
 		await existingPlace.save()
 
 		// and to the user who wrote it
 		const reviewUser = await User.findById(newReview.user)
 		reviewingUser.reviews.push(newReview)
-
 		await reviewUser.save()
 
-
+		// sending created review object causes callstack size error; sending message instead
 		res.status(201).json({
 			message: 'successfully added review'
 		})
 
-		// console.log("here is newReview");
-		// console.log(newReview);
-		// console.log("here is typeof newReview");
-		// console.log(typeof newReview);
-		// console.log("prototype newReview");
-		// console.dir(Object.getPrototypeOf(newReview))
-
-		// console.log("this line causes an error");
-		// const jaysahn = JSON.stringify(newReview)
-		// console.log("can you see this");
-		// console.log(jaysahn);
-
-		// res.send({'hi': 'there'})
-		
-
-		// res.status(201).send(newReview)
-
-		// res.json({
-		// 	status: 'ok',
-		// 	asdf:'asdf'
-		// })
-
 	} catch(err) {
-		console.log("this is an error for creating a review:");
-		console.log(err);
 		next(err)
 	}
 })
